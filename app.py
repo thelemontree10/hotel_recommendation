@@ -5,8 +5,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 # Load mô hình và dữ liệu
 df_info = pd.read_pickle("df_info.pkl")
 
-with open("tfidf_vectorizer.pkl", "rb") as f:
-    tfidf = pickle.load(f)
+tfidf = pd.read_pickle("tfidf_vectorizer.pkl")
 
 
 def recommend_hotels_by_description_sklearn(
@@ -45,4 +44,5 @@ query = st.text_input("Nhập mô tả khách sạn bạn muốn tìm:")
 if query:
     results = recommend_hotels_by_description_sklearn(query)
     st.write(results)
+
 
