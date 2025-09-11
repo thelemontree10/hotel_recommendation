@@ -11,6 +11,8 @@ textblob
 langdetect
 wordcloud
 deep-translator
+underthesea
+
 
 
 
