@@ -1,5 +1,6 @@
 import subprocess
+import sys
 
-cmd = ["python3", "-m", "textblob.download_corpora"]
-subprocess.run(cmd)
+subprocess.run([f"{sys.executable}", "-m", "textblob.download_corpora"])
 print("Working")
+
