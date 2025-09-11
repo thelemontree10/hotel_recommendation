@@ -291,6 +291,7 @@ def normalize_text(text, lang):
 
             # Gán lại text và chuyển sang xử lý như tiếng Việt
             text = translated_text
+            swrite(text)
             lang = "vi"  # chuyển sang pipeline tiếng Việt
 
         if lang == "vi":
@@ -724,3 +725,4 @@ elif menu == "Thông tin nhóm":
     **Họ tên HV 2**: Nguyễn Vũ Bảo Trân  
     """
     )
+
