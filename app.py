@@ -404,6 +404,8 @@ def analyze_keywords(hotel_id):
                 translated = GoogleTranslator(source="vi", target="en").translate(text)
                 st.write(translated)
                 polarity = TextBlob(translated).sentiment.polarity
+                k = polarity
+                st.write(k)
                 return (
                     "positive"
                     if polarity > 0.1
@@ -729,4 +731,5 @@ elif menu == "Thông tin nhóm":
     **Họ tên HV 2**: Nguyễn Vũ Bảo Trân  
     """
     )
+
 
