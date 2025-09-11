@@ -328,7 +328,7 @@ def normalize_text(text, lang):
             for phrase in phrases:
                 flattened.update(phrase.split("_"))
             selected = [word for word in selected if word not in flattened]
-            st.write(" ".join(phrases + selected))
+
             return " ".join(phrases + selected)
 
         else:
@@ -400,6 +400,7 @@ def analyze_keywords(hotel_id):
         try:
             if lang == "vi":
                 senti = sentiment(text)
+                st.write(senti)
                 if senti in ["positive", "negative"]:
                     return senti
                 else:
@@ -724,6 +725,7 @@ elif menu == "Thông tin nhóm":
     **Họ tên HV 2**: Nguyễn Vũ Bảo Trân  
     """
     )
+
 
 
 
