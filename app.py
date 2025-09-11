@@ -406,6 +406,12 @@ def analyze_keywords(hotel_id):
                 polarity = TextBlob(translated).sentiment.polarity
                 k = polarity
                 st.write(k)
+                sentiment_label = (
+                                "positive"
+                                if polarity > 0.1
+                                else "negative" if polarity < -0.1 else "neutral"
+                            )
+                st.write(sentiment_label)
                 return (
                     "positive"
                     if polarity > 0.1
@@ -731,5 +737,6 @@ elif menu == "Thông tin nhóm":
     **Họ tên HV 2**: Nguyễn Vũ Bảo Trân  
     """
     )
+
 
 
