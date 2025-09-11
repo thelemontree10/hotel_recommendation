@@ -19,7 +19,7 @@ nltk.data.path.append("nltk_data")
 from nltk.corpus import stopwords
 
 from langdetect import detect
-# from underthesea import sentiment, pos_tag
+from underthesea import sentiment, pos_tag
 from wordcloud import WordCloud
 
 
@@ -740,4 +740,5 @@ elif menu == "Thông tin nhóm":
     **Họ tên HV 2**: Nguyễn Vũ Bảo Trân  
     """
     )
+
 
