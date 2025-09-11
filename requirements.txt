@@ -6,4 +6,9 @@ seaborn
 scikit-learn
 pyvi
 swifter
+underthesea
+nltk
+textblob
+langdetect
+wordcloud
 
