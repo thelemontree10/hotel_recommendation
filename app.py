@@ -402,16 +402,7 @@ def analyze_keywords(hotel_id):
         try:
             if lang == "vi":
                 translated = GoogleTranslator(source="vi", target="en").translate(text)
-                st.write(translated)
                 polarity = TextBlob(translated).sentiment.polarity
-                k = polarity
-                st.write(k)
-                sentiment_label = (
-                                "positive"
-                                if polarity > 0.1
-                                else "negative" if polarity < -0.1 else "neutral"
-                            )
-                st.write(sentiment_label)
                 return (
                     "positive"
                     if polarity > 0.1
@@ -439,6 +430,8 @@ def analyze_keywords(hotel_id):
             if senti in ["positive", "negative"]:
                 all_keywords.append((kw, senti))
 
+    st.write(all_keywords)
+    
     # Gom từ khóa theo cảm xúc
     pos_keywords = set([kw for kw, senti in all_keywords if senti == "positive"])
     neg_keywords = set([kw for kw, senti in all_keywords if senti == "negative"])
@@ -737,6 +730,7 @@ elif menu == "Thông tin nhóm":
     **Họ tên HV 2**: Nguyễn Vũ Bảo Trân  
     """
     )
+
 
 
 
