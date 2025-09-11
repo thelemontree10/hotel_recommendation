@@ -8,6 +8,7 @@ pyvi
 swifter
 underthesea
 nltk
-textblob
+TextBlob
 langdetect
 wordcloud
+
