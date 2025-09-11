@@ -347,21 +347,30 @@ def classify_keywords(keywords: str, lang: str):
         try:
             clean_kw = kw.replace("_", " ")  # ✅ bỏ dấu gạch dưới để phân tích đúng
             valid_labels = ["positive", "negative"]
+            
             if lang == "vi":
-                senti = sentiment(clean_kw)
-                if senti in valid_labels:
-                    results[kw] = senti
-                else:
-                    results[kw] = "neutral"
-            elif lang == "en":
-                polarity = TextBlob(clean_kw).sentiment.polarity
-                results[kw] = (
+                # Dịch sang tiếng Anh
+                translated_kw = GoogleTranslator(source='vi', target='en').translate(clean_kw)
+                polarity = TextBlob(translated_kw).sentiment.polarity
+                sentiment_label = (
                     "positive"
                     if polarity > 0.1
                     else "negative" if polarity < -0.1 else "neutral"
                 )
+                results[kw] = sentiment_label
+
+            elif lang == "en":
+                polarity = TextBlob(clean_kw).sentiment.polarity
+                sentiment_label = (
+                    "positive"
+                    if polarity > 0.1
+                    else "negative" if polarity < -0.1 else "neutral"
+                )
+                results[kw] = sentiment_label
+
             else:
                 results[kw] = "neutral"
+
         except:
             results[kw] = "neutral"
     return results
@@ -421,8 +430,6 @@ def analyze_keywords(hotel_id):
             return "neutral"
 
     hotel_comments["Sentiment"] = hotel_comments.apply(classify_sentiment, axis=1)
-
-    st.write(hotel_comments["Sentiment"])
     
     # Gom tất cả từ khóa đã chuẩn hóa
     all_keywords = []
@@ -730,6 +737,7 @@ elif menu == "Thông tin nhóm":
     **Họ tên HV 2**: Nguyễn Vũ Bảo Trân  
     """
     )
+
 
 
 
