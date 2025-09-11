@@ -6,11 +6,11 @@ seaborn
 scikit-learn
 pyvi
 swifter
-underthesea==1.3.4
 nltk
 textblob
 langdetect
 wordcloud
+deep-translator
 
 
 
