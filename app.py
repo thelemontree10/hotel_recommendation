@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 import corpora
+import textblob
 from textblob import TextBlob
 
 from underthesea import word_tokenize, pos_tag
@@ -725,5 +726,6 @@ elif menu == "Thông tin nhóm":
     **Họ tên HV 2**: Nguyễn Vũ Bảo Trân  
     """
     )
+
 
 
