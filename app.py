@@ -422,6 +422,8 @@ def analyze_keywords(hotel_id):
 
     hotel_comments["Sentiment"] = hotel_comments.apply(classify_sentiment, axis=1)
 
+    st.write(hotel_comments["Sentiment"])
+    
     # Gom tất cả từ khóa đã chuẩn hóa
     all_keywords = []
     for _, row in hotel_comments.iterrows():
@@ -429,8 +431,6 @@ def analyze_keywords(hotel_id):
         for kw, senti in kw_dict.items():
             if senti in ["positive", "negative"]:
                 all_keywords.append((kw, senti))
-
-    st.write(all_keywords)
     
     # Gom từ khóa theo cảm xúc
     pos_keywords = set([kw for kw, senti in all_keywords if senti == "positive"])
@@ -730,6 +730,7 @@ elif menu == "Thông tin nhóm":
     **Họ tên HV 2**: Nguyễn Vũ Bảo Trân  
     """
     )
+
 
 
 
