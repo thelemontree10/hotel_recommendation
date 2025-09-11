@@ -395,7 +395,6 @@ def analyze_keywords(hotel_id):
 
     # Phân tích cảm xúc từng nhận xét
     def classify_sentiment(row):
-        st.write(row)
         text = row["Processed_Text"]
         lang = row["Lang"]
         try:
@@ -725,6 +724,7 @@ elif menu == "Thông tin nhóm":
     **Họ tên HV 2**: Nguyễn Vũ Bảo Trân  
     """
     )
+
 
 
 
