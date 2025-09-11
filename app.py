@@ -400,6 +400,7 @@ def analyze_keywords(hotel_id):
         try:
             if lang == "vi":
                 senti = sentiment(text)
+                st.write(text)
                 st.write(senti)
                 if senti in ["positive", "negative"]:
                     return senti
@@ -725,6 +726,7 @@ elif menu == "Thông tin nhóm":
     **Họ tên HV 2**: Nguyễn Vũ Bảo Trân  
     """
     )
+
 
 
 
