@@ -10,6 +10,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+from textblob import TextBlob
+
 from underthesea import word_tokenize, pos_tag
 import nltk
 from nltk.corpus import stopwords
@@ -18,7 +20,7 @@ from underthesea import sentiment, word_tokenize, pos_tag
 from wordcloud import WordCloud
 
 
-from textblob import TextBlob
+
 
 # Load mô hình và dữ liệu
 df_info = pd.read_pickle("df_info_Recommendation.pkl")
@@ -722,3 +724,4 @@ elif menu == "Thông tin nhóm":
     **Họ tên HV 2**: Nguyễn Vũ Bảo Trân  
     """
     )
+
