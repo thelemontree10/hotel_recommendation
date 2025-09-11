@@ -670,7 +670,7 @@ elif menu == "Hotel Insight by Hotel ID":
     df_info = pd.read_csv("hotel_info.csv")
 
     # Đọc dữ liệu
-    df_comments = pd.read_csv("hotel_comments.csv", encoding="utf-8")
+    df_comments = pd.read_csv("hotel_comments.csv")
 
     # Chuẩn hóa df_info
     score_cols = [
@@ -724,6 +724,7 @@ elif menu == "Thông tin nhóm":
     **Họ tên HV 2**: Nguyễn Vũ Bảo Trân  
     """
     )
+
 
 
 
