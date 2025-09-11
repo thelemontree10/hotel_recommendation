@@ -11,4 +11,3 @@ nltk
 textblob
 langdetect
 wordcloud
-
