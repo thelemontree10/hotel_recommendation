@@ -395,13 +395,12 @@ def analyze_keywords(hotel_id):
 
     # Phân tích cảm xúc từng nhận xét
     def classify_sentiment(row):
+        st.write(row)
         text = row["Processed_Text"]
         lang = row["Lang"]
         try:
             if lang == "vi":
                 senti = sentiment(text)
-                st.write(text)
-                st.write(senti)
                 if senti in ["positive", "negative"]:
                     return senti
                 else:
@@ -726,6 +725,7 @@ elif menu == "Thông tin nhóm":
     **Họ tên HV 2**: Nguyễn Vũ Bảo Trân  
     """
     )
+
 
 
 
