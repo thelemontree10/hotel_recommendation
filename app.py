@@ -291,7 +291,6 @@ def normalize_text(text, lang):
 
             # Gán lại text và chuyển sang xử lý như tiếng Việt
             text = translated_text
-            st.write(text)
             lang = "vi"  # chuyển sang pipeline tiếng Việt
 
         if lang == "vi":
@@ -329,7 +328,7 @@ def normalize_text(text, lang):
             for phrase in phrases:
                 flattened.update(phrase.split("_"))
             selected = [word for word in selected if word not in flattened]
-
+            st.write(" ".join(phrases + selected))
             return " ".join(phrases + selected)
 
         else:
@@ -725,5 +724,6 @@ elif menu == "Thông tin nhóm":
     **Họ tên HV 2**: Nguyễn Vũ Bảo Trân  
     """
     )
+
 
 
