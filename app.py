@@ -12,14 +12,13 @@ import seaborn as sns
 
 from textblob import TextBlob
 
-from underthesea import word_tokenize, pos_tag
 import nltk
+
+nltk.data.path.append("nltk_data")
 from nltk.corpus import stopwords
 from langdetect import detect
-from underthesea import sentiment, word_tokenize, pos_tag
+from underthesea import sentiment, pos_tag
 from wordcloud import WordCloud
-
-
 
 
 # Load mô hình và dữ liệu
@@ -70,8 +69,9 @@ def load_dict(path):
     return dict(line.strip().split("\t") for line in lines if "\t" in line)
 
 
-nltk.download("punkt", quiet=True)
-nltk.download("stopwords", quiet=True)
+# nltk.download("punkt", quiet=True)
+# nltk.download("stopwords", quiet=True)
+
 teencode_dict = load_dict("teencode.txt")
 emoji_dict = load_dict("emojicon.txt")
 english_vn_dict = load_dict("english-vnmese.txt")
@@ -724,9 +724,3 @@ elif menu == "Thông tin nhóm":
     **Họ tên HV 2**: Nguyễn Vũ Bảo Trân  
     """
     )
-
-
-
-
-
-
