@@ -679,9 +679,19 @@ elif menu == "Recommendation":
     if query:
         results = recommend_hotels_by_description_sklearn(query, 50)
         # Loại bỏ index để không hiển thị như một cột riêng
-        results = results.reset_index(drop=True)
-        # Hiển thị bảng kết quả
-        st.dataframe(results, use_container_width=True)
+
+        columns_to_show = [
+            "Hotel_ID",
+            "Hotel_Name",
+            "Hotel_Rank",
+            "Total_Score",
+            "comments_count",
+            "Clean_Description",
+            "Final_Score",
+        ]
+        st.dataframe(
+            results[columns_to_show].reset_index(drop=True), use_container_width=True
+        )
 
 elif menu == "Hotel Insight by Hotel ID":
     st.header("🔍 Hotel Insight by Hotel ID")
