@@ -687,11 +687,8 @@ elif menu == "Recommendation":
             "Total_Score",
             "comments_count",
             "Clean_Description",
-            "Final_Score",
         ]
-        st.dataframe(
-            results[columns_to_show].reset_index(drop=True), use_container_width=True
-        )
+        st.dataframe(results[columns_to_show], use_container_width=True)
 
 elif menu == "Hotel Insight by Hotel ID":
     st.header("🔍 Hotel Insight by Hotel ID")
