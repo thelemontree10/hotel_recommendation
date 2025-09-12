@@ -45,6 +45,7 @@ def recommend_hotels_by_description_sklearn(
     return top_hotels[
         [
             "Hotel_Name",
+            "Hotel_ID",
             "Hotel_Rank",
             "Total_Score",
             "comments_count",
@@ -740,5 +741,3 @@ elif menu == "Thông tin nhóm":
     **Họ tên HV 2**: Nguyễn Vũ Bảo Trân  
     """
     )
-
-
