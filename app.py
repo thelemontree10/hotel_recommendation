@@ -677,7 +677,7 @@ elif menu == "Recommendation":
 
     query = st.text_input("Nhập mô tả khách sạn bạn muốn tìm:")
     if query:
-        results = recommend_hotels_by_description_sklearn(query)
+        results = recommend_hotels_by_description_sklearn(query, 20)
         st.write(results)
 
 elif menu == "Hotel Insight by Hotel ID":
