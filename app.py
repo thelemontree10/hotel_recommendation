@@ -507,7 +507,8 @@ menu = st.sidebar.selectbox(
     [
         "Business Problem",
         "Evaluation & Report",
-        "Recommendation",
+        "Recommendation by Hotel Description",
+        "Recommendation by User",
         "Hotel Insight by Hotel ID",
         "Thông tin nhóm",
     ],
@@ -671,8 +672,8 @@ elif menu == "Evaluation & Report":
         )
 
 
-elif menu == "Recommendation":
-    st.header("💡 Recommendation")
+elif menu == "Recommendation by Hotel Description":
+    st.header("💡 Recommendation by Hotel Description")
     st.write("Gợi ý khách sạn theo mô tả, điểm đánh giá, vị trí...")
 
     query = st.text_input("Nhập mô tả khách sạn bạn muốn tìm:")
@@ -689,6 +690,62 @@ elif menu == "Recommendation":
             "Clean_Description",
         ]
         st.dataframe(results[columns_to_show], use_container_width=True)
+
+elif menu == "Recommendation by User":
+    st.header("💡 Recommendation by User")
+    st.write("Gợi ý khách sạn theo tên, quốc tịch, chủng nhóm")
+
+    # Load dữ liệu gợi ý
+    df = pd.read_csv("hotel_recommendations.csv")
+
+    # Load dữ liệu khách sạn
+    df_info = pd.read_csv("hotel_info.csv")
+
+    # Tạo danh sách lựa chọn từ dữ liệu
+    reviewer_names = df["Reviewer Name"].dropna().unique()
+    nationalities = df["Nationality"].dropna().unique()
+    group_names = df["Group Name"].dropna().unique()
+
+    # Tạo các selectbox
+    selected_name = st.text_input("Nhập tên người đánh giá (Reviewer Name):")
+
+    # selected_name = st.selectbox("Chọn tên người đánh giá:", sorted(reviewer_names))
+    selected_nationality = st.selectbox("Chọn quốc tịch:", sorted(nationalities))
+    selected_group = st.selectbox("Chọn nhóm:", sorted(group_names))
+
+    # Tạo newID giống như trong PySpark
+    generated_newID = f"{selected_name}_{selected_nationality}_{selected_group}"
+
+    # Lọc gợi ý theo newID
+    user_recs = df[df["newID"] == generated_newID]
+
+    # Nối thông tin khách sạn vào bảng gợi ý
+    user_recs = user_recs.merge(
+        df_info, left_on="Hotel ID", right_on="Hotel_ID", how="left"
+    )
+
+    # Bỏ các dòng không có thông tin khách sạn
+    user_recs = user_recs.dropna(subset=["Hotel_Name", "Hotel_Description"])
+
+    # Hiển thị kết quả
+    if not user_recs.empty:
+        st.subheader(f"Gợi ý khách sạn:")
+        # st.table(user_recs[["Hotel_Name", "Hotel_Description", "Hotel_Rank"]])
+        for _, row in user_recs.iterrows():
+            st.markdown(
+                f"""
+            <div style="background-color:#f9f9f9; padding:15px; border-radius:10px; margin-bottom:15px; box-shadow:0 2px 4px rgba(0,0,0,0.1); color:#000000;">
+                <h4 style="margin-bottom:5px;">🏨 {row['Hotel_Name']}</h4>
+                <p style="margin:0;"><strong>📌 Mô tả:</strong> {row['Hotel_Description']}</p>
+                <p style="margin:0;"><strong>⭐ Xếp hạng:</strong> {row['Hotel_Rank']}</p>
+            </div>
+            """,
+                unsafe_allow_html=True,
+            )
+
+    else:
+        st.warning("Không tìm thấy gợi ý cho tổ hợp người dùng này.")
+
 
 elif menu == "Hotel Insight by Hotel ID":
     st.header("🔍 Hotel Insight by Hotel ID")
