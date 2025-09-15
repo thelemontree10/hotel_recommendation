@@ -23,6 +23,7 @@ from underthesea import sentiment, pos_tag
 from wordcloud import WordCloud
 
 from rapidfuzz import process
+import plotly.graph_objects as go
 
 
 # Load mô hình và dữ liệu
@@ -138,11 +139,9 @@ def show_hotel_info(hotel_id):
 
 
 def analyze_strengths_and_weaknesses(hotel_id):
-    # Lấy thông tin khách sạn
     hotel = df_info[df_info["Hotel_ID"].astype(str) == hotel_id].iloc[0]
     hotel_comments = df_comments[df_comments["Hotel ID"].astype(str) == hotel_id]
 
-    # Các cột điểm chi tiết
     score_cols = [
         "Location",
         "Cleanliness",
@@ -152,29 +151,44 @@ def analyze_strengths_and_weaknesses(hotel_id):
         "Comfort_and_room_quality",
     ]
 
-    # Tính trung bình hệ thống
     system_avg = df_info[score_cols].mean()
+    hotel_scores = [hotel[col] for col in score_cols]
+    system_scores = [system_avg[col] for col in score_cols]
 
-    print("\n📊 Phân tích điểm mạnh & điểm yếu:")
+    # Biểu đồ so sánh điểm khách sạn vs trung bình hệ thống
+    fig = go.Figure()
+    fig.add_trace(
+        go.Bar(
+            x=[col.replace("_", " ").title() for col in score_cols],
+            y=hotel_scores,
+            name="Khách sạn",
+            marker_color="rgb(26, 118, 255)",
+        )
+    )
+    fig.add_trace(
+        go.Bar(
+            x=[col.replace("_", " ").title() for col in score_cols],
+            y=system_scores,
+            name="Trung bình hệ thống",
+            marker_color="rgb(55, 83, 109)",
+        )
+    )
 
-    for col in score_cols:
-        hotel_score = hotel[col]
-        avg_score = system_avg[col]
+    fig.update_layout(
+        title="📊 So sánh điểm từng tiêu chí",
+        xaxis_title="Tiêu chí",
+        yaxis_title="Điểm đánh giá",
+        barmode="group",
+        height=400,
+    )
 
-        if pd.notnull(hotel_score):
-            diff = hotel_score - avg_score
-            status = "✅ Điểm mạnh" if diff > 0 else "⚠️ Điểm yếu"
-            st.write(
-                f"- {col.replace('_', ' ').title()}: {hotel_score:.2f} ({status}, trung bình hệ thống: {avg_score:.2f})"
-            )
-        else:
-            st.write(f"- {col.replace('_', ' ').title()}: Không có dữ liệu")
+    st.plotly_chart(fig, use_container_width=True)
 
     # Phân tích số lượng nhận xét
     num_reviews = len(hotel_comments)
-    st.write(f"\n🧮 Số lượng nhận xét: {num_reviews} lượt")
+    st.write(f"🧮 Số lượng nhận xét: **{num_reviews} lượt**")
 
-    # Phân tích nội dung nhận xét (từ khóa nổi bật)
+    # Từ khóa nổi bật
     hotel_comments["Normalized_Text"] = hotel_comments["Review_Text"].apply(
         normalize_text_old
     )
@@ -184,8 +198,8 @@ def analyze_strengths_and_weaknesses(hotel_id):
     X = vectorizer.fit_transform(hotel_comments["Normalized_Text"])
     keywords = vectorizer.get_feature_names_out()
 
-    st.write("\n🗣️ Từ khóa nổi bật trong nhận xét:")
-    st.write(", ".join(keywords))
+    st.write("🗣️ Từ khóa nổi bật trong nhận xét:")
+    st.markdown("`" + "`, `".join(keywords) + "`")
 
 
 def analyze_customers(hotel_id):
@@ -196,76 +210,76 @@ def analyze_customers(hotel_id):
         st.write(f"❌ Không tìm thấy dữ liệu cho Hotel ID: {hotel_id}")
         return
 
+    st.subheader("👥 Phân tích khách hàng")
+
     # 1️⃣ Quốc tịch phổ biến
     top_nationalities = hotel_comments["Nationality"].value_counts().head(5)
-    st.write("\n🌍 Quốc tịch phổ biến:")
-    for nat, count in top_nationalities.items():
-        print(f"- {nat}: {count} lượt")
-
-    # Vẽ biểu đồ tròn quốc tịch
-    plt.figure(figsize=(6, 6))
-    plt.pie(
-        top_nationalities.values,
-        labels=top_nationalities.index,
-        autopct="%1.1f%%",
-        startangle=140,
-    )
-    plt.title(f"🌍 Quốc tịch phổ biến - Hotel ID: {hotel_id}")
-    plt.axis("equal")
-    plt.tight_layout()
-    st.pyplot(plt)
 
     # 2️⃣ Nhóm khách phổ biến
-    if "Group Name" in hotel_comments.columns:
-        top_groups = hotel_comments["Group Name"].value_counts().head(5)
-        st.write("\n👥 Nhóm khách phổ biến:")
-        for grp, count in top_groups.items():
-            st.write(f"- {grp}: {count} lượt")
+    top_groups = (
+        hotel_comments["Group Name"].value_counts().head(5)
+        if "Group Name" in hotel_comments.columns
+        else None
+    )
 
-        # Vẽ biểu đồ tròn nhóm khách
-        plt.figure(figsize=(6, 6))
-        plt.pie(
-            top_groups.values,
-            labels=top_groups.index,
+    # Hiển thị 2 biểu đồ tròn cạnh nhau
+    col1, col2 = st.columns(2)
+
+    with col1:
+        fig1, ax1 = plt.subplots(figsize=(4, 4))
+        ax1.pie(
+            top_nationalities.values,
+            labels=top_nationalities.index,
             autopct="%1.1f%%",
             startangle=140,
         )
-        plt.title(f"👥 Nhóm khách phổ biến - Hotel ID: {hotel_id}")
-        plt.axis("equal")
-        plt.tight_layout()
-        st.pyplot(plt)
-    else:
-        st.write("\n⚠️ Không có cột 'Group Name' để phân loại nhóm khách.")
+        ax1.set_title("🌍 Quốc tịch phổ biến")
+        ax1.axis("equal")
+        st.pyplot(fig1)
 
-    # 3️⃣ Xu hướng theo thời gian + Vẽ biểu đồ
+    with col2:
+        if top_groups is not None:
+            fig2, ax2 = plt.subplots(figsize=(4, 4))
+            ax2.pie(
+                top_groups.values,
+                labels=top_groups.index,
+                autopct="%1.1f%%",
+                startangle=140,
+            )
+            ax2.set_title("👥 Nhóm khách phổ biến")
+            ax2.axis("equal")
+            st.pyplot(fig2)
+        else:
+            st.write("⚠️ Không có cột 'Group Name' để phân loại nhóm khách.")
+
+    # 3️⃣ Xu hướng đánh giá theo thời gian
     if "Review_Month" in hotel_comments.columns:
         monthly_trend = hotel_comments.groupby("Review_Month").size()
 
         if monthly_trend.empty:
-            st.write("\n⚠️ Không có dữ liệu hợp lệ để vẽ biểu đồ.")
+            st.write("⚠️ Không có dữ liệu hợp lệ để vẽ biểu đồ.")
             return
 
-        st.write("\n📈 Xu hướng đánh giá theo thời gian:")
+        st.subheader("📈 Xu hướng đánh giá theo thời gian")
 
-        # Chuyển Period về Timestamp để vẽ
         monthly_trend.index = monthly_trend.index.to_timestamp()
 
-        # Vẽ biểu đồ đường
-        plt.figure(figsize=(12, 6))
+        fig3, ax3 = plt.subplots(figsize=(10, 4))
         sns.lineplot(
-            x=monthly_trend.index, y=monthly_trend.values, marker="o", color="darkcyan"
+            x=monthly_trend.index,
+            y=monthly_trend.values,
+            marker="o",
+            color="darkcyan",
+            ax=ax3,
         )
-        plt.title(
-            f"📈 Xu hướng đánh giá theo thời gian - Hotel ID: {hotel_id}", fontsize=14
-        )
-        plt.xlabel("Tháng", fontsize=12)
-        plt.ylabel("Số lượt đánh giá", fontsize=12)
+        ax3.set_title("📈 Số lượt đánh giá theo tháng", fontsize=14)
+        ax3.set_xlabel("Tháng", fontsize=12)
+        ax3.set_ylabel("Số lượt đánh giá", fontsize=12)
+        ax3.grid(True)
         plt.xticks(rotation=45)
-        plt.grid(True)
-        plt.tight_layout()
-        st.pyplot(plt)
+        st.pyplot(fig3)
     else:
-        st.write("\n⚠️ Không có cột 'Review_Month' để phân tích thời gian.")
+        st.write("⚠️ Không có cột 'Review_Month' để phân tích thời gian.")
 
 
 def normalize_text(text, lang):
@@ -404,33 +418,6 @@ def analyze_keywords(hotel_id):
         lambda row: normalize_text(row["Review_Text"], row["Lang"]), axis=1
     )
 
-    # Phân tích cảm xúc từng nhận xét
-    # def classify_sentiment(row):
-    #     text = row["Processed_Text"]
-    #     lang = row["Lang"]
-    #     try:
-    #         if lang == "vi":
-    #             translated = GoogleTranslator(source="vi", target="en").translate(text)
-    #             polarity = TextBlob(translated).sentiment.polarity
-    #             return (
-    #                 "positive"
-    #                 if polarity > 0.1
-    #                 else "negative" if polarity < -0.1 else "neutral"
-    #             )
-    #         elif lang == "en":
-    #             polarity = TextBlob(text).sentiment.polarity
-    #             return (
-    #                 "positive"
-    #                 if polarity > 0.1
-    #                 else "negative" if polarity < -0.1 else "neutral"
-    #             )
-    #         else:
-    #             return "neutral"
-    #     except:
-    #         return "neutral"
-
-    # hotel_comments["Sentiment"] = hotel_comments.apply(classify_sentiment, axis=1)
-
     # Gom tất cả từ khóa đã chuẩn hóa
     all_keywords = []
     for _, row in hotel_comments.iterrows():
@@ -448,52 +435,78 @@ def analyze_keywords(hotel_id):
     pos_keywords -= shared
     neg_keywords -= shared
 
-    # In kết quả
-    st.write("\n✅ Từ khóa tích cực:")
-    st.write(
-        ", ".join(sorted(pos_keywords))
-        if pos_keywords
-        else "Không có từ tích cực nổi bật."
-    )
+    # # In kết quả
+    # st.write("\n✅ Điểm tích cực:")
+    # st.write(
+    #     ", ".join(sorted(pos_keywords))
+    #     if pos_keywords
+    #     else "Không có điểm tích cực nổi bật."
+    # )
 
-    st.write("\n⚠️ Từ khóa tiêu cực:")
-    st.write(
-        ", ".join(sorted(neg_keywords))
-        if neg_keywords
-        else "Không có từ tiêu cực nổi bật."
-    )
+    # st.write("\n⚠️ Điểm tiêu cực:")
+    # st.write(
+    #     ", ".join(sorted(neg_keywords))
+    #     if neg_keywords
+    #     else "Không có điểm tiêu cực nổi bật."
+    # )
 
-    # Vẽ Word Cloud
-    def show_wordcloud(keywords, title, color="black"):
+    def show_wordcloud_in_column(keywords, title, color, container):
         if not keywords:
-            print(f"⚠️ Không có từ khóa để vẽ Word Cloud cho: {title}")
+            container.write(f"⚠️ Không có từ khóa để vẽ Word Cloud cho: {title}")
             return
         text = " ".join(keywords)
         wc = WordCloud(
-            width=800, height=400, background_color="white", colormap=color
+            width=600, height=300, background_color="white", colormap=color
         ).generate(text)
-        plt.figure(figsize=(10, 5))
-        plt.imshow(wc, interpolation="bilinear")
-        plt.axis("off")
-        plt.title(title, fontsize=16)
-        plt.tight_layout()
-        st.pyplot(plt)
+        fig, ax = plt.subplots(figsize=(6, 3))
+        ax.imshow(wc, interpolation="bilinear")
+        ax.axis("off")
+        ax.set_title(title, fontsize=14)
+        container.pyplot(fig)
 
-    show_wordcloud(pos_keywords, "✅ Word Cloud - Từ khóa tích cực", color="Greens")
-    show_wordcloud(neg_keywords, "⚠️ Word Cloud - Từ khóa tiêu cực", color="Reds")
+    # Tạo 2 cột cạnh nhau
+    col1, col2 = st.columns(2)
+
+    # Vẽ Word Cloud trong từng cột
+    show_wordcloud_in_column(pos_keywords, "✅ Điểm tích cực", "Greens", col1)
+    show_wordcloud_in_column(neg_keywords, "⚠️ Điểm tiêu cực", "Reds", col2)
 
 
 def compare_to_system(hotel_id):
     hotel = df_info[df_info["Hotel_ID"].astype(str) == hotel_id].iloc[0]
     system_avg = df_info[score_cols].mean()
 
-    st.write("\n📊 So sánh điểm từng tiêu chí với trung bình hệ thống:")
+    # Tính chênh lệch điểm từng tiêu chí
+    diffs = []
+    labels = []
+
     for col in score_cols:
         if pd.notnull(hotel[col]):
             diff = hotel[col] - system_avg[col]
-            st.write(
-                f"- {col.replace('_', ' ').title()}: {diff:+.2f} điểm so với trung bình"
-            )
+            diffs.append(round(diff, 2))
+            labels.append(col.replace("_", " ").title())
+
+    # Vẽ biểu đồ cột ngang
+    fig = go.Figure(
+        go.Bar(
+            x=diffs,
+            y=labels,
+            orientation="h",
+            marker_color=["green" if d > 0 else "red" for d in diffs],
+            text=[f"{d:+.2f}" for d in diffs],
+            textposition="outside",
+        )
+    )
+
+    fig.update_layout(
+        title="📊 So sánh điểm từng tiêu chí với trung bình hệ thống",
+        xaxis_title="Chênh lệch điểm",
+        yaxis_title="Tiêu chí",
+        height=400,
+        margin=dict(l=80, r=40, t=60, b=40),
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
 
 
 st.set_page_config(page_title="Hotel Recommender", layout="wide")

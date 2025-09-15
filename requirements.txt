@@ -13,6 +13,6 @@ wordcloud
 deep-translator
 underthesea
 rapidfuzz
-
+plotly
 
 
