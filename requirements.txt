@@ -12,7 +12,7 @@ langdetect
 wordcloud
 deep-translator
 underthesea
-
+rapidfuzz
 
 
 

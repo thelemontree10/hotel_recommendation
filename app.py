@@ -22,6 +22,8 @@ from langdetect import detect
 from underthesea import sentiment, pos_tag
 from wordcloud import WordCloud
 
+from rapidfuzz import process
+
 
 # Load mô hình và dữ liệu
 df_info = pd.read_pickle("df_info_Recommendation.pkl")
@@ -44,12 +46,7 @@ def recommend_hotels_by_description_sklearn(
     top_hotels = df_info.sort_values(by="Final_Score", ascending=False).head(top_n)
     return top_hotels[
         [
-            "Hotel_Name",
             "Hotel_ID",
-            "Hotel_Rank",
-            "Total_Score",
-            "comments_count",
-            "Clean_Description",
             "Final_Score",
         ]
     ]
@@ -509,7 +506,7 @@ menu = st.sidebar.selectbox(
         "Evaluation & Report",
         "Recommendation by Hotel Description",
         "Recommendation by User",
-        "Hotel Insight by Hotel ID",
+        "Hotel Insight",
         "Thông tin nhóm",
     ],
 )
@@ -678,18 +675,33 @@ elif menu == "Recommendation by Hotel Description":
 
     query = st.text_input("Nhập mô tả khách sạn bạn muốn tìm:")
     if query:
-        results = recommend_hotels_by_description_sklearn(query, 50)
-        # Loại bỏ index để không hiển thị như một cột riêng
+        results = recommend_hotels_by_description_sklearn(query, 5)
 
-        columns_to_show = [
-            "Hotel_ID",
-            "Hotel_Name",
-            "Hotel_Rank",
-            "Total_Score",
-            "comments_count",
-            "Clean_Description",
-        ]
-        st.dataframe(results[columns_to_show], use_container_width=True)
+        # Load dữ liệu khách sạn
+        df_info = pd.read_csv("hotel_info.csv")
+
+        # Nối thông tin chi tiết khách sạn
+        results = results.merge(df_info, on="Hotel_ID", how="left")
+
+        # Bỏ các dòng thiếu thông tin
+        results = results.dropna(subset=["Hotel_Name", "Hotel_Description"])
+
+        # Hiển thị kết quả bằng card
+        st.subheader("🏨 Các khách sạn phù hợp với mô tả của bạn:")
+
+        for _, row in results.iterrows():
+            st.markdown(
+                f"""
+            <div style="background-color:#f9f9f9; padding:15px; border-radius:10px; margin-bottom:15px; box-shadow:0 2px 4px rgba(0,0,0,0.1); color:#000000;">
+                <h4 style="margin-bottom:5px;">🏨 {row['Hotel_Name']}</h4>
+                <p style="margin:0;"><strong>📌 Mô tả:</strong> {row['Hotel_Description']}</p>
+                <p style="margin:0;"><strong>⭐ Xếp hạng:</strong> {row['Hotel_Rank']}</p>
+                <p style="margin:0;"><strong>🧮 Tổng điểm:</strong> {row['Total_Score']}</p>
+                <p style="margin:0;"><strong>💬 Số lượng bình luận:</strong> {row['comments_count']}</p>
+            </div>
+            """,
+                unsafe_allow_html=True,
+            )
 
 elif menu == "Recommendation by User":
     st.header("💡 Recommendation by User")
@@ -730,7 +742,6 @@ elif menu == "Recommendation by User":
     # Hiển thị kết quả
     if not user_recs.empty:
         st.subheader(f"Gợi ý khách sạn:")
-        # st.table(user_recs[["Hotel_Name", "Hotel_Description", "Hotel_Rank"]])
         for _, row in user_recs.iterrows():
             st.markdown(
                 f"""
@@ -747,8 +758,8 @@ elif menu == "Recommendation by User":
         st.warning("Không tìm thấy gợi ý cho tổ hợp người dùng này.")
 
 
-elif menu == "Hotel Insight by Hotel ID":
-    st.header("🔍 Hotel Insight by Hotel ID")
+elif menu == "Hotel Insight":
+    st.header("🔍 Hotel Insight")
 
     # Load dữ liệu khách sạn
     df_info = pd.read_csv("hotel_info.csv")
@@ -768,7 +779,7 @@ elif menu == "Hotel Insight by Hotel ID":
 
     for col in score_cols:
         df_info[col] = pd.to_numeric(
-            df_info["Total_Score"].astype(str).str.replace(",", "."), errors="coerce"
+            df_info[col].astype(str).str.replace(",", "."), errors="coerce"
         )
 
     # Chuẩn hóa df_comments
@@ -784,21 +795,41 @@ elif menu == "Hotel Insight by Hotel ID":
     df_comments["Review_Text"] = df_comments["Title"] + " " + df_comments["Body"]
     df_comments["Review_Month"] = df_comments["Review_Date_Clean"].dt.to_period("M")
 
-    hotel_id = st.text_input("Nhập Hotel_ID cần phân tích: ")
+    # Nhập tên khách sạn gần đúng
+    input_name = st.text_input("🏨 Nhập tên khách sạn gần đúng:")
 
-    if hotel_id:
-        if hotel_id.strip() == "":
-            st.info("🔎 Vui lòng nhập Hotel_ID để bắt đầu phân tích.")
-        elif hotel_id not in df_info["Hotel_ID"].astype(str).values:
-            st.error("❌ Hotel_ID không tồn tại.")
+    # Bước 1: Nhấn nút để tìm kiếm tên gần đúng
+    if st.button("🔍 Tìm kiếm khách sạn") and input_name:
+        hotel_names = df_info["Hotel_Name"].dropna().unique()
+        matches = process.extract(input_name, hotel_names, limit=5, score_cutoff=60)
+
+        if matches:
+            match_names = [m[0] for m in matches]
+            st.session_state["match_names"] = match_names
         else:
+            st.warning("❌ Không tìm thấy khách sạn phù hợp.")
+
+    # Bước 2: Hiển thị danh sách chọn nếu đã có kết quả fuzzy
+    if "match_names" in st.session_state:
+        selected_name = st.selectbox(
+            "📋 Chọn tên khách sạn:", st.session_state["match_names"]
+        )
+
+        # Nút phân tích sau khi chọn tên
+        if st.button("📊 Phân tích khách sạn"):
+            hotel_id = (
+                df_info[df_info["Hotel_Name"] == selected_name]["Hotel_ID"]
+                .astype(str)
+                .values[0]
+            )
+            st.success(f"✅ Đã chọn khách sạn: {selected_name} (Hotel_ID: {hotel_id})")
+
+            # Gọi các hàm phân tích
             show_hotel_info(hotel_id)
             analyze_strengths_and_weaknesses(hotel_id)
             analyze_customers(hotel_id)
             analyze_keywords(hotel_id)
             compare_to_system(hotel_id)
-    else:
-        st.info("🔎 Nhập Hotel_ID để bắt đầu phân tích.")
 
 elif menu == "Thông tin nhóm":
     st.header("👥 Nhóm E thực hiện")
