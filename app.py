@@ -63,6 +63,10 @@ def extract_date(text):
     return None
 
 
+def truncate_text(text, max_chars=250):
+    return text[:max_chars] + "..." if len(text) > max_chars else text
+
+
 # Load các từ điển hỗ trợ
 def load_dict(path):
     with open(path, "r", encoding="utf-8") as f:
@@ -703,18 +707,22 @@ elif menu == "Recommendation by Hotel Description":
         st.subheader("🏨 Các khách sạn phù hợp với mô tả của bạn:")
 
         for _, row in results.iterrows():
+            short_desc = truncate_text(str(row["Hotel_Description"]), max_chars=250)
             st.markdown(
                 f"""
-            <div style="background-color:#f9f9f9; padding:15px; border-radius:10px; margin-bottom:15px; box-shadow:0 2px 4px rgba(0,0,0,0.1); color:#000000;">
-                <h4 style="margin-bottom:5px;">🏨 {row['Hotel_Name']}</h4>
-                <p style="margin:0;"><strong>📌 Mô tả:</strong> {row['Hotel_Description']}</p>
-                <p style="margin:0;"><strong>⭐ Xếp hạng:</strong> {row['Hotel_Rank']}</p>
-                <p style="margin:0;"><strong>🧮 Tổng điểm:</strong> {row['Total_Score']}</p>
-                <p style="margin:0;"><strong>💬 Số lượng bình luận:</strong> {row['comments_count']}</p>
-            </div>
-            """,
+                <div style="background-color:#f9f9f9; padding:15px; border-radius:10px; margin-bottom:15px; box-shadow:0 2px 4px rgba(0,0,0,0.1); color:#000000;">
+                    <h4 style="margin-bottom:5px;">🏨 {row['Hotel_Name']}</h4>
+                    <p style="margin:0;"><strong>📌 Mô tả ngắn:</strong> {short_desc}</p>
+                    <p style="margin:0;"><strong>⭐ Xếp hạng:</strong> {row['Hotel_Rank']}</p>
+                    <p style="margin:0;"><strong>🧮 Tổng điểm:</strong> {row['Total_Score']}</p>
+                    <p style="margin:0;"><strong>💬 Số lượng bình luận:</strong> {row['comments_count']}</p>
+                </div>
+                """,
                 unsafe_allow_html=True,
             )
+
+            with st.expander("🔎 Xem mô tả đầy đủ"):
+                st.write(row["Hotel_Description"])
 
 elif menu == "Recommendation by User":
     st.header("💡 Recommendation by User")
@@ -756,16 +764,20 @@ elif menu == "Recommendation by User":
     if not user_recs.empty:
         st.subheader(f"Gợi ý khách sạn:")
         for _, row in user_recs.iterrows():
+            short_desc = truncate_text(str(row["Hotel_Description"]), max_chars=250)
             st.markdown(
                 f"""
-            <div style="background-color:#f9f9f9; padding:15px; border-radius:10px; margin-bottom:15px; box-shadow:0 2px 4px rgba(0,0,0,0.1); color:#000000;">
-                <h4 style="margin-bottom:5px;">🏨 {row['Hotel_Name']}</h4>
-                <p style="margin:0;"><strong>📌 Mô tả:</strong> {row['Hotel_Description']}</p>
-                <p style="margin:0;"><strong>⭐ Xếp hạng:</strong> {row['Hotel_Rank']}</p>
-            </div>
-            """,
+                <div style="background-color:#f9f9f9; padding:15px; border-radius:10px; margin-bottom:10px; box-shadow:0 2px 4px rgba(0,0,0,0.1); color:#000000;">
+                    <h4 style="margin-bottom:5px;">🏨 {row['Hotel_Name']}</h4>
+                    <p style="margin:0;"><strong>📌 Mô tả ngắn:</strong> {short_desc}</p>
+                    <p style="margin:0;"><strong>⭐ Xếp hạng:</strong> {row['Hotel_Rank']}</p>
+                </div>
+                """,
                 unsafe_allow_html=True,
             )
+
+            with st.expander("🔎 Xem mô tả đầy đủ"):
+                st.write(row["Hotel_Description"])
 
     else:
         st.warning("Không tìm thấy gợi ý cho tổ hợp người dùng này.")
